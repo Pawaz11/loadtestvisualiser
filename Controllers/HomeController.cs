@@ -1,5 +1,6 @@
 ﻿using Load_Test_Visualiser.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,9 +14,12 @@ namespace Load_Test_Visualiser.Controllers
     {
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        private IHostEnvironment _env;
+
+        public HomeController(IHostEnvironment env, ILogger<HomeController> logger)
         {
             _logger = logger;
+            _env = env;
         }
 
         public IActionResult Index()
