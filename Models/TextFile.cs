@@ -5,5 +5,6 @@ namespace Load_Test_Visualiser.Models
     {
         public string Name { get; set; }
         public string Content { get; set; }
+        public string JsonContent { get; set; }
     }
 }
