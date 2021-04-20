@@ -1,25 +1,46 @@
-﻿<html>
+﻿
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript">
+    google.charts.load("current", { packages: ["timeline"] });
+    google.charts.setOnLoadCallback(drawChartAgain);
+    function drawChartAgain() {
+
+        var options = {
+            width: 50000,
+            height: 500,
+            hAxis: { format: 'HH:mm:sss' }
+        };
+
+        var colourChartContainer = document.getElementById('colourChart');
+        var colourChart = new google.visualization.Timeline(colourChartContainer);
+        var dataTableColour = new google.visualization.DataTable(@ViewBag.chartData.ColourChartJson)
+
+        colourChart.draw(dataTableColour, options);
+
+        @*var errorChartContainer = document.getElementById("errorChart");
+        var errorChart = new google.visulization.TimeLine(errorChartContainer);
+        var dataTableError = new google.visulization.DataTable(@ViewBag.chartData.ErrorChartJson, 0.6);
+
+        errorChart.draw(dataTableError, options);*@
+    }
+
+</script>
+
+<html>
 <head>
     <meta name="viewport" content="width=device-width" />
     <title>Success</title>
 </head>
 <body>
+    <!--Table and divs that hold the pie charts-->
+    <table class="columns">
+        <tr>
+            <td><div id="colourChart" style="border: 1px solid #ccc"></div></td>
+        </tr>
+        <tr>
 
-    <h3>Uploaded File Information</h3>
-    <table cellpadding="2" cellspacing="2" border="1">
-        <tr>
-            <td>Name</td>
-            <td>@ViewBag.file.Name</td>
-        </tr>
-        <tr>
-            <td>Content</td>
-            <td>@ViewBag.file.Content</td>
-        </tr>
-        <tr>
-            <td>Content => Json</td>
-            <td>@ViewBag.fileJson.Content</td>
+            <td><div id="errorChart" style="border: 1px solid #ccc"></div></td>
         </tr>
     </table>
-
 </body>
 </html>
