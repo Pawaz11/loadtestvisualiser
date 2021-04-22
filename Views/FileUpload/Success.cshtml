@@ -1,7 +1,29 @@
 ﻿
 <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
 <script type="text/javascript">
+    var chartData;
     google.charts.load("current", { packages: ["timeline"] });
+
+    $(document).ready(function () {
+        $.ajax({
+            url: "fileUpload/GetDataTable",
+            data: "",
+            dataType: "json",
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            success: function (data) {
+                chartData = data;
+            },
+            error: function () {
+                alert("Error loading data table...");
+            }
+        }).done(function () {
+            drawChartAgain();
+        });
+    });
+
+
     google.charts.setOnLoadCallback(drawChartAgain);
     function drawChartAgain() {
 
@@ -17,14 +39,15 @@
 
         colourChart.draw(dataTableColour, options);
 
-        @*var errorChartContainer = document.getElementById("errorChart");
+        var errorChartContainer = document.getElementById("errorChart");
         var errorChart = new google.visulization.TimeLine(errorChartContainer);
         var dataTableError = new google.visulization.DataTable(@ViewBag.chartData.ErrorChartJson, 0.6);
 
-        errorChart.draw(dataTableError, options);*@
+        errorChart.draw(dataTableError, options);
     }
 
 </script>
+
 
 <html>
 <head>
