@@ -20,6 +20,7 @@ namespace Load_Test_Visualiser.Controllers
     {
         private IWebHostEnvironment _env;
         private TextFile _uploadedFile;
+        private ChartData _chartData;
 
         public FileUploadController(IWebHostEnvironment env)
         {
@@ -50,18 +51,65 @@ namespace Load_Test_Visualiser.Controllers
             _uploadedFile = readFile;
 
             var colourChartData = GetColourChartJson(ExtractThreadsSamplersAndFormat());
-            var colourChartDataJson = JsonConvert.SerializeObject(colourChartData).Normalize();
-
+            var colourChartDataJson = JsonConvert.DeserializeObject(colourChartData); 
             var chartData = new ChartData {
                 ColourChartJson = colourChartDataJson
-                //ErrorChartJson = GetErrorChartJson(ExtractThreadsSamplersAndFormat())
             };
 
             ViewBag.file = readFile;
+            _chartData = chartData;
 
             ViewBag.chartData = chartData;
 
             return View("Success");
+        }
+
+        public ChartData GetDataTable()
+        {
+            return _chartData;
+
+        }
+
+        private string GetColourChartJson(List<NormalisedSamples> normalisedSamples)
+        {
+            var threadNameColumn = new Column { Id = "threadName", Label = "Thread Name", Type = "string" };
+            var labelColumn = new Column { Id = "label", Label = "Label", Type = "string" };
+            var startDateColumn = new Column { Id = "start", Type = "date" };
+            var endDateColumn = new Column { Id = "end", Type = "date" };
+
+            var columns = new List<Column> { threadNameColumn, labelColumn, startDateColumn, endDateColumn };
+
+            var allRows = normalisedSamples.Select(x =>
+                new Row { ColumnValues =
+                new ColumnValues {
+                        ThreadName = x.ThreadName,
+                        Label = x.Label,
+                        StartEpochMilli = x.StartTime,
+                        EndEpochMilli = x.EndTime
+                    }
+                }).ToList();
+
+            var dataTable = new DataTable { Columns = columns, Rows = allRows};
+
+            return JsonConvert.SerializeObject(dataTable);
+
+  //          var colourChartRows = normalisedSamples.Select(x =>
+  //          {
+  //              return $"{{c:[{{v: '{x.ThreadName}'}}, {{v: '{x.Label}'}}, {{v:  new Date({x.StartTime})}}, {{v:  new Date({x.EndTime})}} ]}}";
+  //          }
+  //          ).Aggregate((x, y) => x + "," + Environment.NewLine + y);
+
+  //          var colourChart = $@"{{
+  //  cols: [
+		//	{{id: 'threadName', label: 'Thread Name', type: 'string'}},
+		//	{{id: 'label', label: 'Label', type: 'string'}},
+		//	{{id: 'start', type: 'date'}},
+		//	{{id: 'end', type: 'date'}}
+		//],
+  //  rows: [
+		//	{colourChartRows}
+		//]
+  //  }}";
         }
 
         private List<NormalisedSamples> ExtractThreadsSamplersAndFormat()
@@ -119,61 +167,41 @@ namespace Load_Test_Visualiser.Controllers
                 };
             }).ToList();
 
-            normalisedSamples.Select(x => $"['{x.ThreadName}', '{x.Label}', new Date({x.StartTime}), new Date({x.EndTime})]").Aggregate((x, y) => x + "," + Environment.NewLine + y);
+            //normalisedSamples.Select(x => $"['{x.ThreadName}', '{x.Label}', new Date({x.StartTime}), new Date({x.EndTime})]").Aggregate((x, y) => x + "," + Environment.NewLine + y);
             return normalisedSamples;
         }
 
-        private string GetColourChartJson(List<NormalisedSamples> normalisedSamples)
-        {
-            var colourChartRows = normalisedSamples.Select(x =>
-            {
-                return $"{{c:[{{v: '{x.ThreadName}'}}, {{v: '{x.Label}'}}, {{v:  new Date({x.StartTime})}}, {{v:  new Date({x.EndTime})}} ]}}";
-            }
-            ).Aggregate((x, y) => x + "," + Environment.NewLine + y);
+        //      private string GetErrorChartJson(List<NormalisedSamples> normalisedSamples) 
+        //      {
+        //          var errorChartRows = normalisedSamples.Select(x =>
+        //          {
+        //              var colour = "grey";
+        //              if (x.Failure)
+        //                  colour = "red";
 
-            var colourChart = $@"{{
-    cols: [
-			{{id: 'threadName', label: 'Thread Name', type: 'string'}},
-			{{id: 'label', label: 'Label', type: 'string'}},
-			{{id: 'start', type: 'date'}},
-			{{id: 'end', type: 'date'}}
-		],
-    rows: [
-			{colourChartRows}
-		]
-    }}";
-            return colourChart;
-        }
+        //              return $"{{c:[{{v: '{x.ThreadName}'}}, {{v: '{x.Label}'}}, {{v: '{GetHtmlTooltip(x.Label, x.ResponseMessage)}'}}, {{v: '{colour}'}}, {{v:  new Date({x.StartTime})}}, {{v:  new Date({x.EndTime})}} ]}}";
+        //          }
+        //          ).Aggregate((x, y) => x + "," + Environment.NewLine + y);
 
-  //      private string GetErrorChartJson(List<NormalisedSamples> normalisedSamples) 
-  //      {
-  //          var errorChartRows = normalisedSamples.Select(x =>
-  //          {
-  //              var colour = "grey";
-  //              if (x.Failure)
-  //                  colour = "red";
+        //          var errorChart = $@"{{
+        //  cols: [
+        //	{{id: 'threadName', label: 'Thread Name', type: 'string'}},
+        //	{{id: 'label', label: 'Label', type: 'string'}},
+        //	{{role: 'tooltip', type: 'string', 'p': {{'html': true}}}},
+        //	{{id: 'style', role: 'style', type: 'string'}},
+        //	{{id: 'start', type: 'date'}},
+        //	{{id: 'end', type: 'date'}}
+        //],
+        //  rows: [
+        //	{errorChartRows}
+        //]
+        //  }};";
 
-  //              return $"{{c:[{{v: '{x.ThreadName}'}}, {{v: '{x.Label}'}}, {{v: '{GetHtmlTooltip(x.Label, x.ResponseMessage)}'}}, {{v: '{colour}'}}, {{v:  new Date({x.StartTime})}}, {{v:  new Date({x.EndTime})}} ]}}";
-  //          }
-  //          ).Aggregate((x, y) => x + "," + Environment.NewLine + y);
+        //          var errorChartJson = JsonConvert.SerializeObject(errorChart);
+        //          return errorChartJson;
+        //      }
 
-  //          var errorChart = $@"{{
-  //  cols: [
-		//	{{id: 'threadName', label: 'Thread Name', type: 'string'}},
-		//	{{id: 'label', label: 'Label', type: 'string'}},
-		//	{{role: 'tooltip', type: 'string', 'p': {{'html': true}}}},
-		//	{{id: 'style', role: 'style', type: 'string'}},
-		//	{{id: 'start', type: 'date'}},
-		//	{{id: 'end', type: 'date'}}
-		//],
-  //  rows: [
-		//	{errorChartRows}
-		//]
-  //  }};";
 
-  //          var errorChartJson = JsonConvert.SerializeObject(errorChart);
-  //          return errorChartJson;
-  //      }
 
         private string GetHtmlTooltip(string label, string responseMessage)
         {
