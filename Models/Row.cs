@@ -7,6 +7,6 @@ namespace Load_Test_Visualiser.Models
 {
     public class Row
     {
-        public List<C> C { get; set; }
+        public ColumnValues ColumnValues { get; set; }
     }
 }
