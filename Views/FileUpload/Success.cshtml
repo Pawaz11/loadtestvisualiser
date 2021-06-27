@@ -4,27 +4,9 @@
 <script type="text/javascript">
     var chartData;
     google.charts.load("current", { packages: ["timeline"] });
-
-    $(document).ready(function () {
-        $.ajax({
-            url: "fileUpload/GetDataTable",
-            data: "",
-            dataType: "json",
-            type: "POST",
-            contentType: "application/json; charset=utf-8",
-            success: function (data) {
-                chartData = data;
-            },
-            error: function () {
-                alert("Error loading data table...");
-            }
-        }).done(function () {
-            drawChartAgain();
-        });
-    });
-
-
     google.charts.setOnLoadCallback(drawChartAgain);
+    drawChartAgain();
+
     function drawChartAgain() {
 
         var options = {
@@ -35,7 +17,7 @@
 
         var colourChartContainer = document.getElementById('colourChart');
         var colourChart = new google.visualization.Timeline(colourChartContainer);
-        var dataTableColour = new google.visualization.DataTable(@ViewBag.chartData.ColourChartJson)
+        var dataTableColour = new google.visualization.DataTable(@ViewBag.chartData.DataTableJson)
 
         colourChart.draw(dataTableColour, options);
 
@@ -59,6 +41,12 @@
     <table class="columns">
         <tr>
             <td><div id="colourChart" style="border: 1px solid #ccc"></div></td>
+        </tr>
+
+        <tr>
+            <td>
+                <div id="chartDataJson"></div>
+            </td>
         </tr>
         <tr>
 
