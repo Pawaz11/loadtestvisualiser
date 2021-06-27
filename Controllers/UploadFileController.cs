@@ -1,4 +1,5 @@
 ﻿using Load_Test_Visualiser.Models;
+using Load_Test_Visualiser.Models.DataTable;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,22 +16,19 @@ using System.Xml.Linq;
 
 namespace Load_Test_Visualiser.Controllers
 {
-    [Route("fileUpload")]
     public class FileUploadController : Controller
     {
         private IWebHostEnvironment _env;
         private TextFile _uploadedFile;
-        private ChartData _chartData;
 
         public FileUploadController(IWebHostEnvironment env)
         {
             _env = env;
         }
 
-        [HttpPost]
         [RequestFormLimits(MultipartBodyLengthLimit = 209715200)]
         [RequestSizeLimit(209715200)]
-        public IActionResult SingleFile(IFormFile file)
+        public void SingleFile(IFormFile file)
         {
             var dir = _env.ContentRootPath;
             var path = Path.Combine(dir, "data", file.FileName);
@@ -51,26 +49,13 @@ namespace Load_Test_Visualiser.Controllers
             _uploadedFile = readFile;
 
             var colourChartData = GetColourChartJson(ExtractThreadsSamplersAndFormat());
-            var colourChartDataJson = JsonConvert.DeserializeObject(colourChartData); 
-            var chartData = new ChartData {
-                ColourChartJson = colourChartDataJson
-            };
+            var colourChartDataJson = JsonConvert.DeserializeObject(colourChartData);
 
+            ViewBag.DataTableJson = colourChartDataJson;
             ViewBag.file = readFile;
-            _chartData = chartData;
-
-            ViewBag.chartData = chartData;
-
-            return View("Success");
         }
 
-        public ChartData GetDataTable()
-        {
-            return _chartData;
-
-        }
-
-        private string GetColourChartJson(List<NormalisedSamples> normalisedSamples)
+        private static string GetColourChartJson(List<NormalisedSamples> normalisedSamples)
         {
             var threadNameColumn = new Column { Id = "threadName", Label = "Thread Name", Type = "string" };
             var labelColumn = new Column { Id = "label", Label = "Label", Type = "string" };
@@ -80,8 +65,10 @@ namespace Load_Test_Visualiser.Controllers
             var columns = new List<Column> { threadNameColumn, labelColumn, startDateColumn, endDateColumn };
 
             var allRows = normalisedSamples.Select(x =>
-                new Row { ColumnValues =
-                new ColumnValues {
+                new Row
+                {
+                    c = new ColumnValues
+                    {
                         ThreadName = x.ThreadName,
                         Label = x.Label,
                         StartEpochMilli = x.StartTime,
@@ -89,7 +76,7 @@ namespace Load_Test_Visualiser.Controllers
                     }
                 }).ToList();
 
-            var dataTable = new DataTable { Columns = columns, Rows = allRows};
+            var dataTable = new DataTable { cols = columns, rows = allRows};
 
             return JsonConvert.SerializeObject(dataTable);
 
